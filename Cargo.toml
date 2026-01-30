@@ -1,0 +1,18 @@
+[package]
+name = "rlox"
+version = "0.1.0"
+authors = ["Vladyslav Mok <vladyslav.mok@gmail.com>"]
+edition = "2024"
+
+[[bin]]
+name = "rlox"
+path = "src/main.rs"
+
+[[bin]]
+name = "test_runner"
+path = "src/test_runner.rs"
+
+[features]
+debug_trace = []
+
+[dependencies]
