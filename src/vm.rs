@@ -23,9 +23,9 @@ struct CallFrame {
 pub struct VM {
     frames: Vec<CallFrame>,
     stack: Vec<Value>,
-    globals: HashMap<Rc<String>, Value>,
+    globals: HashMap<Rc<str>, Value>,
     open_upvalues: HashMap<usize, Rc<RefCell<Upvalue>>>,
-    init_string: Rc<String>,
+    init_string: Rc<str>,
     interner: StringInterner,
 }
 
@@ -128,7 +128,7 @@ impl VM {
                 }
                 Some(OpCode::GetGlobal) => {
                     let name = self.read_string();
-                    match self.globals.get(&name) {
+                    match self.globals.get(name.as_ref()) {
                         Some(value) => self.push(value.clone()),
                         None => {
                             self.runtime_error(&format!("Undefined variable '{}'.", name));
@@ -143,7 +143,7 @@ impl VM {
                 }
                 Some(OpCode::SetGlobal) => {
                     let name = self.read_string();
-                    if !self.globals.contains_key(&name) {
+                    if !self.globals.contains_key(name.as_ref()) {
                         self.runtime_error(&format!("Undefined variable '{}'.", name));
                         return Err(());
                     }
@@ -179,12 +179,21 @@ impl VM {
                     };
 
                     let name = self.read_string();
-                    let field_value = instance.fields.borrow().get(&name).cloned();
+                    let field_value = instance.fields.borrow().get(name.as_ref()).cloned();
                     if let Some(value) = field_value {
                         self.pop();
                         self.push(value);
-                    } else if !self.bind_method(&instance.class, &name) {
-                        return Err(());
+                    } else {
+                        let class = match instance.class.upgrade() {
+                            Some(c) => c,
+                            None => {
+                                self.runtime_error("Instance's class has been deallocated.");
+                                return Err(());
+                            }
+                        };
+                        if !self.bind_method(&class, name.as_ref()) {
+                            return Err(());
+                        }
                     }
                 }
                 Some(OpCode::SetProperty) => {
@@ -477,7 +486,7 @@ impl VM {
         frame.closure.function.chunk.constants[idx].clone()
     }
 
-    fn read_string(&mut self) -> Rc<String> {
+    fn read_string(&mut self) -> Rc<str> {
         match self.read_constant() {
             Value::Obj(obj) => match &*obj {
                 Obj::String(s) => Rc::clone(s),
@@ -517,7 +526,7 @@ impl VM {
                 }
                 Obj::Class(class) => {
                     let instance = Instance {
-                        class: Rc::clone(class),
+                        class: Rc::downgrade(class),
                         fields: RefCell::new(HashMap::new()),
                     };
                     let stack_len = self.stack.len();
@@ -579,7 +588,7 @@ impl VM {
         true
     }
 
-    fn invoke(&mut self, name: &String, arg_count: usize) -> bool {
+    fn invoke(&mut self, name: &str, arg_count: usize) -> bool {
         let receiver = self.peek(arg_count);
 
         if !receiver.is_instance() {
@@ -601,10 +610,17 @@ impl VM {
             return self.call_value(value, arg_count);
         }
 
-        self.invoke_from_class(&instance.class, name, arg_count)
+        let class = match instance.class.upgrade() {
+            Some(c) => c,
+            None => {
+                self.runtime_error("Instance's class has been deallocated.");
+                return false;
+            }
+        };
+        self.invoke_from_class(&class, name, arg_count)
     }
 
-    fn invoke_from_class(&mut self, class: &Class, name: &String, arg_count: usize) -> bool {
+    fn invoke_from_class(&mut self, class: &Class, name: &str, arg_count: usize) -> bool {
         match class.methods.borrow().get(name) {
             Some(Value::Obj(obj)) => match &**obj {
                 Obj::Closure(closure) => self.call(closure, arg_count),
@@ -620,7 +636,7 @@ impl VM {
         }
     }
 
-    fn bind_method(&mut self, class: &Class, name: &String) -> bool {
+    fn bind_method(&mut self, class: &Class, name: &str) -> bool {
         match class.methods.borrow().get(name) {
             Some(Value::Obj(obj)) => match &**obj {
                 Obj::Closure(closure) => {
@@ -673,7 +689,7 @@ impl VM {
         });
     }
 
-    fn define_method(&mut self, name: &Rc<String>) {
+    fn define_method(&mut self, name: &Rc<str>) {
         let method = self.pop();
         let class_rc = match self.peek(0) {
             Value::Obj(obj) => match &**obj {
@@ -683,7 +699,10 @@ impl VM {
             _ => unreachable!(),
         };
 
-        class_rc.methods.borrow_mut().insert(name.clone(), method);
+        class_rc
+            .methods
+            .borrow_mut()
+            .insert(Rc::clone(name), method);
     }
 
     fn push(&mut self, value: Value) {

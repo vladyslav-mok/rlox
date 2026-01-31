@@ -1,8 +1,8 @@
 use crate::chunk::Chunk;
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
-use std::rc::Rc;
+use std::rc::{Rc, Weak};
 
 #[derive(Debug, Clone)]
 pub enum Value {
@@ -54,7 +54,7 @@ impl fmt::Display for Value {
 
 #[derive(Debug, Clone)]
 pub enum Obj {
-    String(Rc<String>),
+    String(Rc<str>),
     Function(Rc<Function>),
     Native(Rc<Native>),
     Closure(Rc<Closure>),
@@ -83,7 +83,13 @@ impl fmt::Display for Obj {
                 }
             }
             Obj::Class(class) => write!(f, "{}", class.name),
-            Obj::Instance(instance) => write!(f, "{} instance", instance.class.name),
+            Obj::Instance(instance) => {
+                if let Some(class) = instance.class.upgrade() {
+                    write!(f, "{} instance", class.name)
+                } else {
+                    write!(f, "<dropped class> instance")
+                }
+            }
             Obj::BoundMethod(bound) => {
                 if let Some(name) = &bound.method.function.name {
                     write!(f, "<fn {}>", name)
@@ -97,24 +103,22 @@ impl fmt::Display for Obj {
 
 #[derive(Debug)]
 pub struct StringInterner {
-    strings: HashMap<String, Rc<String>>,
+    strings: HashSet<Rc<str>>,
 }
 
 impl StringInterner {
     pub fn new() -> Self {
         Self {
-            strings: HashMap::new(),
+            strings: HashSet::new(),
         }
     }
 
-    pub fn intern(&mut self, s: &str) -> Rc<String> {
+    pub fn intern(&mut self, s: &str) -> Rc<str> {
         if let Some(existing) = self.strings.get(s) {
             return Rc::clone(existing);
         }
-
-        let owned = s.to_string();
-        let rc = Rc::new(owned.clone());
-        self.strings.insert(owned, Rc::clone(&rc));
+        let rc: Rc<str> = Rc::from(s);
+        self.strings.insert(Rc::clone(&rc));
         rc
     }
 }
@@ -130,7 +134,7 @@ pub struct Function {
     pub arity: usize,
     pub upvalue_count: usize,
     pub chunk: Chunk,
-    pub name: Option<Rc<String>>,
+    pub name: Option<Rc<str>>,
 }
 
 impl Function {
@@ -195,14 +199,14 @@ impl Upvalue {
 
 #[derive(Debug, Clone)]
 pub struct Class {
-    pub name: Rc<String>,
-    pub methods: RefCell<HashMap<Rc<String>, Value>>,
+    pub name: Rc<str>,
+    pub methods: RefCell<HashMap<Rc<str>, Value>>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Instance {
-    pub class: Rc<Class>,
-    pub fields: RefCell<HashMap<Rc<String>, Value>>,
+    pub class: Weak<Class>,
+    pub fields: RefCell<HashMap<Rc<str>, Value>>,
 }
 
 #[derive(Debug, Clone)]

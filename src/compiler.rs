@@ -402,7 +402,7 @@ impl<'a> Compiler<'a> {
 
         if function_type != FunctionType::Script {
             let name = self.parser.previous.as_ref().unwrap().lexeme;
-            compiler.function.name = Some(Rc::new(name.to_string()));
+            compiler.function.name = Some(Rc::from(name));
         }
 
         compiler.enclosing = self.current.take();
@@ -1130,13 +1130,13 @@ impl<'a> Compiler<'a> {
     }
 
     fn error(&mut self, message: &str) {
-        if let Some(prev) = self.parser.previous.clone() {
+        if let Some(prev) = self.parser.previous {
             self.error_at(&prev, message);
         }
     }
 
     fn error_at_current(&mut self, message: &str) {
-        if let Some(curr) = self.parser.current.clone() {
+        if let Some(curr) = self.parser.current {
             self.error_at(&curr, message);
         }
     }

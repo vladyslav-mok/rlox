@@ -1,0 +1,580 @@
+// Performance test for all Lox language features using clock()
+
+// ========== HELPER FUNCTIONS ==========
+fun benchStart(name) {
+  print "=== ";
+  print name;
+  print " ===";
+  var start = clock();
+  return start;
+}
+
+fun benchEnd(startTime, name, count) {
+  var end = clock();
+  var duration = end - startTime;
+  print "Operations: ";
+  print count;
+  print "Time: ";
+  print duration;
+  print " sec";
+  if (duration > 0) {
+    var opsPerSec = count / duration;
+    print "Ops/sec: ";
+    print opsPerSec;
+  }
+  print "";
+}
+
+fun mod(a, b) {
+  return a - (a / b) * b;
+}
+
+// ========== TEST: VARIABLES ==========
+fun testVariables() {
+  var start = benchStart("Variables");
+  var count = 0;
+  for (var i = 0; i < 10000; i = i + 1) {
+    var a = i;
+    var b = i + 1;
+    var c = i + 2;
+    var d = a + b + c;
+    count = count + 1;
+  }
+  benchEnd(start, "Variables", count);
+}
+
+// ========== TEST: ARITHMETIC ==========
+fun testArithmetic() {
+  var start = benchStart("Arithmetic Operations");
+  var count = 0;
+  for (var i = 0; i < 10000; i = i + 1) {
+    var a = i + 5;
+    var b = i - 3;
+    var c = i * 2;
+    var d = i / 2;
+    var e = mod(i, 3);
+    count = count + 5;
+  }
+  benchEnd(start, "Arithmetic Operations", count);
+}
+
+// ========== TEST: COMPARISON ==========
+fun testComparison() {
+  var start = benchStart("Comparison Operations");
+  var count = 0;
+  for (var i = 0; i < 10000; i = i + 1) {
+    var a = i == 5000;
+    var b = i != 5000;
+    var c = i < 5000;
+    var d = i > 5000;
+    var e = i <= 5000;
+    var f = i >= 5000;
+    count = count + 6;
+  }
+  benchEnd(start, "Comparison Operations", count);
+}
+
+// ========== TEST: LOGICAL ==========
+fun testLogical() {
+  var start = benchStart("Logical Operations");
+  var count = 0;
+  for (var i = 0; i < 10000; i = i + 1) {
+    var a = !true;
+    var b = i < 5000 and i > 0;
+    var c = i < 0 or i > 5000;
+    var d = true and false;
+    var e = true or false;
+    count = count + 5;
+  }
+  benchEnd(start, "Logical Operations", count);
+}
+
+// ========== TEST: STRINGS ==========
+fun testStrings() {
+  var start = benchStart("String Operations");
+  var count = 0;
+  var result = "";
+  for (var i = 0; i < 1000; i = i + 1) {
+    result = result + "a";
+    count = count + 1;
+  }
+  benchEnd(start, "String Operations", count);
+}
+
+// ========== TEST: CONDITIONALS ==========
+fun testConditionals() {
+  var start = benchStart("Conditional Statements");
+  var count = 0;
+  for (var i = 0; i < 10000; i = i + 1) {
+    if (i < 5000) {
+      count = count + 1;
+    } else {
+      count = count + 1;
+    }
+  }
+  benchEnd(start, "Conditional Statements", count);
+}
+
+// ========== TEST: NESTED CONDITIONS ==========
+fun testNestedConditions() {
+  var start = benchStart("Nested Conditions");
+  var count = 0;
+  for (var i = 0; i < 10000; i = i + 1) {
+    if (i < 3333) {
+      if (i < 1666) {
+        count = count + 1;
+      } else {
+        count = count + 1;
+      }
+    } else if (i < 6666) {
+      if (i < 5000) {
+        count = count + 1;
+      } else {
+        count = count + 1;
+      }
+    } else {
+      count = count + 1;
+    }
+  }
+  benchEnd(start, "Nested Conditions", count);
+}
+
+// ========== TEST: WHILE LOOP ==========
+fun testWhileLoop() {
+  var start = benchStart("While Loop");
+  var count = 0;
+  var i = 0;
+  while (i < 10000) {
+    i = i + 1;
+    count = count + 1;
+  }
+  benchEnd(start, "While Loop", count);
+}
+
+// ========== TEST: FOR LOOP ==========
+fun testForLoop() {
+  var start = benchStart("For Loop");
+  var count = 0;
+  for (var i = 0; i < 10000; i = i + 1) {
+    count = count + 1;
+  }
+  benchEnd(start, "For Loop", count);
+}
+
+// ========== TEST: NESTED LOOPS ==========
+fun testNestedLoops() {
+  var start = benchStart("Nested Loops");
+  var count = 0;
+  for (var i = 0; i < 100; i = i + 1) {
+    for (var j = 0; j < 100; j = j + 1) {
+      count = count + 1;
+    }
+  }
+  benchEnd(start, "Nested Loops", count);
+}
+
+// ========== TEST: FUNCTIONS ==========
+fun testFunctions() {
+  var start = benchStart("Function Calls");
+  fun simpleFunc(x) {
+    return x + 1;
+  }
+  var count = 0;
+  for (var i = 0; i < 10000; i = i + 1) {
+    var result = simpleFunc(i);
+    count = count + 1;
+  }
+  benchEnd(start, "Function Calls", count);
+}
+
+// ========== TEST: MULTIPLE PARAMETERS ==========
+fun testMultipleParams() {
+  var start = benchStart("Functions with Multiple Parameters");
+  fun add(a, b, c) {
+    return a + b + c;
+  }
+  var count = 0;
+  for (var i = 0; i < 10000; i = i + 1) {
+    var result = add(i, i + 1, i + 2);
+    count = count + 1;
+  }
+  benchEnd(start, "Functions with Multiple Parameters", count);
+}
+
+// ========== TEST: RECURSION ==========
+fun testRecursion() {
+  var start = benchStart("Recursion (fib(25))");
+  fun fib(n) {
+    if (n <= 1) {
+      return n;
+    }
+    return fib(n - 1) + fib(n - 2);
+  }
+  var fibResult = fib(25);
+  var count = 196418;
+  benchEnd(start, "Recursion (fib(25))", count);
+}
+
+// ========== TEST: CLOSURES ==========
+fun testClosures() {
+  var start = benchStart("Closures");
+  fun makeAdder(x) {
+    fun adder(y) {
+      return x + y;
+    }
+    return adder;
+  }
+  var count = 0;
+  var add10 = makeAdder(10);
+  for (var i = 0; i < 10000; i = i + 1) {
+    var result = add10(i);
+    count = count + 1;
+  }
+  benchEnd(start, "Closures", count);
+}
+
+// ========== TEST: CLASS CREATION ==========
+fun testClassCreation() {
+  var start = benchStart("Class Object Creation and Usage");
+  class SimpleClass {
+    init(value) {
+      this.value = value;
+    }
+
+    getValue() {
+      return this.value;
+    }
+
+    setValue(value) {
+      this.value = value;
+    }
+  }
+  var count = 0;
+  var obj = SimpleClass(0);
+  for (var i = 0; i < 10000; i = i + 1) {
+    obj.setValue(i);
+    var v = obj.getValue();
+    count = count + 2;
+  }
+  benchEnd(start, "Class Object Creation and Usage", count);
+}
+
+// ========== TEST: MULTIPLE OBJECTS ==========
+fun testMultipleObjects() {
+  var start = benchStart("Multiple Object Creation");
+  class TestClass {
+    init(a, b) {
+      this.a = a;
+      this.b = b;
+    }
+
+    compute() {
+      return this.a + this.b;
+    }
+  }
+  var count = 0;
+  for (var i = 0; i < 1000; i = i + 1) {
+    var obj = TestClass(i, i + 1);
+    var result = obj.compute();
+    count = count + 1;
+  }
+  benchEnd(start, "Multiple Object Creation", count);
+}
+
+// ========== TEST: INHERITANCE ==========
+fun testInheritance() {
+  var start = benchStart("Inheritance and Virtual Methods");
+  class Parent {
+    init(name) {
+      this.name = name;
+    }
+
+    speak() {
+      return this.name + " speaks";
+    }
+  }
+
+  class Child < Parent {
+    init(name) {
+      super.init(name);
+    }
+
+    speak() {
+      return this.name + " speaks loudly";
+    }
+  }
+  var count = 0;
+  var child = Child("Child");
+  for (var i = 0; i < 10000; i = i + 1) {
+    var result = child.speak();
+    count = count + 1;
+  }
+  benchEnd(start, "Inheritance and Virtual Methods", count);
+}
+
+// ========== TEST: SCOPE ==========
+fun testScope() {
+  var start = benchStart("Scope and Blocks");
+  var count = 0;
+  for (var i = 0; i < 1000; i = i + 1) {
+    var outer = i;
+    {
+      var inner = i + 1;
+      count = count + 1;
+    }
+    {
+      var inner2 = i + 2;
+      count = count + 1;
+    }
+    count = count + 1;
+  }
+  benchEnd(start, "Scope and Blocks", count);
+}
+
+// ========== TEST: COMPLEX EXPRESSIONS ==========
+fun testComplexExpressions() {
+  var start = benchStart("Complex Expressions");
+  var count = 0;
+  for (var i = 0; i < 10000; i = i + 1) {
+    var result = ((i + 5) * 2 - 3) / 4 + ((i * 3) + 1) / 2;
+    count = count + 1;
+  }
+  benchEnd(start, "Complex Expressions", count);
+}
+
+// ========== TEST: ASSIGNMENT ==========
+fun testAssignment() {
+  var start = benchStart("Assignment");
+  var count = 0;
+  var a = 0;
+  var b = 0;
+  var c = 0;
+  var d = 0;
+  var e = 0;
+  for (var i = 0; i < 10000; i = i + 1) {
+    a = i;
+    b = i + 1;
+    c = i + 2;
+    d = i + 3;
+    e = i + 4;
+    count = count + 5;
+  }
+  benchEnd(start, "Assignment", count);
+}
+
+// ========== TEST: NIL HANDLING ==========
+fun testNilHandling() {
+  var start = benchStart("Nil Handling");
+  var count = 0;
+  for (var i = 0; i < 10000; i = i + 1) {
+    var x = nil;
+    if (x == nil) {
+      x = i;
+    }
+    if (x != nil) {
+      count = count + 1;
+    }
+  }
+  benchEnd(start, "Nil Handling", count);
+}
+
+// ========== TEST: LINKED LIST ==========
+fun testLinkedList() {
+  var start = benchStart("Linked List (Data Structures)");
+  class Node {
+    init(value) {
+      this.value = value;
+      this.next = nil;
+    }
+
+    addNext(node) {
+      this.next = node;
+    }
+
+    traverse() {
+      var sum = 0;
+      var current = this;
+      var count = 0;
+      while (current != nil) {
+        sum = sum + current.value;
+        current = current.next;
+        count = count + 1;
+      }
+      return count;
+    }
+  }
+  var count = 0;
+  var head = Node(0);
+  var current = head;
+  for (var i = 1; i < 1000; i = i + 1) {
+    var newNode = Node(i);
+    current.addNext(newNode);
+    current = newNode;
+    count = count + 1;
+  }
+  var traversed = head.traverse();
+  count = count + traversed;
+  benchEnd(start, "Linked List (1000 elements)", count);
+}
+
+// ========== TEST: CLASS METHODS ==========
+fun testClassMethods() {
+  var start = benchStart("Class Methods");
+  class Calculator {
+    init() {
+      this.value = 0;
+    }
+
+    add(n) {
+      this.value = this.value + n;
+    }
+
+    mul(n) {
+      this.value = this.value * n;
+    }
+
+    get() {
+      return this.value;
+    }
+  }
+  var count = 0;
+  var calc = Calculator();
+  for (var i = 0; i < 10000; i = i + 1) {
+    calc.add(1);
+    calc.mul(2);
+    var v = calc.get();
+    count = count + 3;
+  }
+  benchEnd(start, "Class Methods", count);
+}
+
+// ========== TEST: NESTED CLASSES ==========
+fun testNestedClasses() {
+  var start = benchStart("Complex Class Operations");
+  class Counter {
+    init(start) {
+      this.value = start;
+    }
+
+    increment() {
+      this.value = this.value + 1;
+    }
+
+    decrement() {
+      this.value = this.value - 1;
+    }
+
+    getValue() {
+      return this.value;
+    }
+  }
+
+  class Controller {
+    init() {
+      this.counter = Counter(0);
+    }
+
+    update() {
+      this.counter.increment();
+      return this.counter.getValue();
+    }
+  }
+  var count = 0;
+  var controller = Controller();
+  for (var i = 0; i < 10000; i = i + 1) {
+    var v = controller.update();
+    count = count + 1;
+  }
+  benchEnd(start, "Complex Class Operations", count);
+}
+
+// ========== TEST: MULTIPLE VARIABLES ==========
+fun testMultipleVariables() {
+  var start = benchStart("Multiple Variable Changes");
+  var count = 0;
+  var x = 0;
+  var y = 1;
+  var z = 2;
+  for (var i = 0; i < 10000; i = i + 1) {
+    x = x + y;
+    y = y + z;
+    z = z + x;
+    x = x - 1;
+    y = y - 1;
+    z = z - 1;
+    count = count + 6;
+  }
+  benchEnd(start, "Multiple Variable Changes", count);
+}
+
+// ========== TEST: COMBINED ==========
+fun testCombined() {
+  var start = benchStart("Combined Test");
+  fun compute(x) {
+    if (x < 0) {
+      return 0;
+    } else if (x > 100) {
+      return 100;
+    }
+    return x * 2;
+  }
+
+  class Processor {
+    init() {
+      this.total = 0;
+    }
+
+    process(value) {
+      this.total = this.total + compute(value);
+    }
+
+    getTotal() {
+      return this.total;
+    }
+  }
+  var count = 0;
+  var processor = Processor();
+  for (var i = 0; i < 10000; i = i + 1) {
+    processor.process(compute(i));
+    count = count + 1;
+  }
+  var total = processor.getTotal();
+  count = count + 1;
+  benchEnd(start, "Combined Test", count);
+}
+
+// ========== RUN ALL TESTS ==========
+testVariables();
+testArithmetic();
+testComparison();
+testLogical();
+testStrings();
+testConditionals();
+testNestedConditions();
+testWhileLoop();
+testForLoop();
+testNestedLoops();
+testFunctions();
+testMultipleParams();
+testRecursion();
+testClosures();
+testClassCreation();
+testMultipleObjects();
+testInheritance();
+testScope();
+testComplexExpressions();
+testAssignment();
+testNilHandling();
+testLinkedList();
+testClassMethods();
+testNestedClasses();
+testMultipleVariables();
+testCombined();
+
+print "========================================";
+print "=== All Performance Tests Completed! ===";
+print "========================================";
+print "";
+print "Summary:";
+print "The clock() function is used to measure time";
+print "in seconds between start and end of each test.";
