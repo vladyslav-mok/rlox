@@ -102,7 +102,7 @@ impl VM {
             };
             self.frames.last_mut().unwrap().ip += 1;
 
-            match OpCode::from_byte(instruction) {
+            match instruction.try_into().ok() {
                 Some(OpCode::Constant) => {
                     let constant = self.read_constant();
                     self.push(constant);

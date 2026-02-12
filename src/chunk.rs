@@ -42,54 +42,56 @@ pub enum OpCode {
     Method = 36,
 }
 
-impl OpCode {
-    pub fn from_byte(byte: u8) -> Option<Self> {
-        match byte {
-            0 => Some(OpCode::Constant),
-            1 => Some(OpCode::Nil),
-            2 => Some(OpCode::True),
-            3 => Some(OpCode::False),
-            4 => Some(OpCode::Pop),
-            5 => Some(OpCode::GetLocal),
-            6 => Some(OpCode::SetLocal),
-            7 => Some(OpCode::GetGlobal),
-            8 => Some(OpCode::DefineGlobal),
-            9 => Some(OpCode::SetGlobal),
-            10 => Some(OpCode::GetUpvalue),
-            11 => Some(OpCode::SetUpvalue),
-            12 => Some(OpCode::GetProperty),
-            13 => Some(OpCode::SetProperty),
-            14 => Some(OpCode::GetSuper),
-            15 => Some(OpCode::Equal),
-            16 => Some(OpCode::Greater),
-            17 => Some(OpCode::Less),
-            18 => Some(OpCode::Add),
-            19 => Some(OpCode::Subtract),
-            20 => Some(OpCode::Multiply),
-            21 => Some(OpCode::Divide),
-            22 => Some(OpCode::Not),
-            23 => Some(OpCode::Negate),
-            24 => Some(OpCode::Print),
-            25 => Some(OpCode::Jump),
-            26 => Some(OpCode::JumpIfFalse),
-            27 => Some(OpCode::Loop),
-            28 => Some(OpCode::Call),
-            29 => Some(OpCode::Invoke),
-            30 => Some(OpCode::SuperInvoke),
-            31 => Some(OpCode::Closure),
-            32 => Some(OpCode::CloseUpvalue),
-            33 => Some(OpCode::Return),
-            34 => Some(OpCode::Class),
-            35 => Some(OpCode::Inherit),
-            36 => Some(OpCode::Method),
-            _ => None,
-        }
-    }
-}
-
 impl From<OpCode> for u8 {
     fn from(op: OpCode) -> Self {
         op as u8
+    }
+}
+
+impl TryFrom<u8> for OpCode {
+    type Error = ();
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(OpCode::Constant),
+            1 => Ok(OpCode::Nil),
+            2 => Ok(OpCode::True),
+            3 => Ok(OpCode::False),
+            4 => Ok(OpCode::Pop),
+            5 => Ok(OpCode::GetLocal),
+            6 => Ok(OpCode::SetLocal),
+            7 => Ok(OpCode::GetGlobal),
+            8 => Ok(OpCode::DefineGlobal),
+            9 => Ok(OpCode::SetGlobal),
+            10 => Ok(OpCode::GetUpvalue),
+            11 => Ok(OpCode::SetUpvalue),
+            12 => Ok(OpCode::GetProperty),
+            13 => Ok(OpCode::SetProperty),
+            14 => Ok(OpCode::GetSuper),
+            15 => Ok(OpCode::Equal),
+            16 => Ok(OpCode::Greater),
+            17 => Ok(OpCode::Less),
+            18 => Ok(OpCode::Add),
+            19 => Ok(OpCode::Subtract),
+            20 => Ok(OpCode::Multiply),
+            21 => Ok(OpCode::Divide),
+            22 => Ok(OpCode::Not),
+            23 => Ok(OpCode::Negate),
+            24 => Ok(OpCode::Print),
+            25 => Ok(OpCode::Jump),
+            26 => Ok(OpCode::JumpIfFalse),
+            27 => Ok(OpCode::Loop),
+            28 => Ok(OpCode::Call),
+            29 => Ok(OpCode::Invoke),
+            30 => Ok(OpCode::SuperInvoke),
+            31 => Ok(OpCode::Closure),
+            32 => Ok(OpCode::CloseUpvalue),
+            33 => Ok(OpCode::Return),
+            34 => Ok(OpCode::Class),
+            35 => Ok(OpCode::Inherit),
+            36 => Ok(OpCode::Method),
+            _ => Err(()),
+        }
     }
 }
 

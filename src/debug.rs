@@ -14,7 +14,7 @@ pub fn disassemble_instruction(chunk: &Chunk, offset: usize) -> usize {
     }
 
     let instruction = chunk.code[offset];
-    match OpCode::from_byte(instruction) {
+    match instruction.try_into().ok() {
         Some(OpCode::Constant) => constant_instruction("OP_CONSTANT", chunk, offset),
         Some(OpCode::Nil) => simple_instruction("OP_NIL", offset),
         Some(OpCode::True) => simple_instruction("OP_TRUE", offset),
